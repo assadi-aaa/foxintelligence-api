@@ -28,7 +28,6 @@ export class LogService extends NestSchedule implements OnModuleInit {
   }
 
   async processFileLog() {
-
     return new Promise((async (resolve, reject) => {
 
       if (!this.fileService.isFileExist()) {
