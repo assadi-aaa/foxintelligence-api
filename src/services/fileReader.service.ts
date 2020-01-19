@@ -2,13 +2,16 @@ import * as fs from 'fs';
 import * as stream from 'stream';
 import * as readline from 'readline';
 import { Interface } from 'readline';
+import { ConfigService } from '../config/config.service';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class FileReaderService {
 
   filePath: string;
 
-  constructor() {
-    this.filePath = 'access.log';
+  constructor(private configService: ConfigService) {
+    this.filePath = this.configService.get('FILE_PATH');
   }
 
   isFileExist(): boolean {
