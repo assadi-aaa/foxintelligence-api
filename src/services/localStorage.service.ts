@@ -14,6 +14,10 @@ export class LocalStorageService {
     return nodePersist.setItem(key, data);
   }
 
+  async clearAll() {
+    await nodePersist.clear();
+  }
+
   private async initStorage() {
     await nodePersist.init({
       stringify: JSON.stringify,

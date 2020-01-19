@@ -4,6 +4,7 @@ import { ApiResponse } from '@nestjs/swagger';
 
 @Controller('log')
 /*@UseInterceptors(CacheInterceptor)*/
+// TODO
 export class LogController {
 
   constructor(private logService: LogService) {
@@ -11,7 +12,7 @@ export class LogController {
 
   @ApiResponse({ status: 200, description: 'Return analysed data from log file !' })
   @Get('analyse')
-  processFileLog() {
+  async processFileLog() {
     return this.logService.processFileLog();
   }
 }

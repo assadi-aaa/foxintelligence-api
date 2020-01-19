@@ -1,0 +1,27 @@
+{
+  "uniqueVisitors": [
+    "127.0.0.1"
+  ],
+  "numberRequests": 4,
+  "numberValidRequests": 2,
+  "sections": [
+    {
+      "occurrence": 3,
+      "successNumber": 2,
+      "sectionName": "api"
+    },
+    {
+      "occurrence": 1,
+      "successNumber": 0,
+      "sectionName": "report"
+    }
+  ],
+  "lastRequest": {
+    "date": "2018-05-09T16:00:39.000Z",
+    "url": "127.0.0.1",
+    "method": "127.0.0.1",
+    "status": "GET",
+    "section": "report",
+    "isSuccess": false
+  }
+}

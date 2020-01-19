@@ -1,10 +1,10 @@
+import { Section } from './section.model';
 import { RequestModel } from './request.model';
-import { SectionData } from './section-data.model';
 
-export interface Sections {
-  sections: SectionData;
-  lastVisit: string;
+export interface DataResponseModel {
+  sections: Section[];
   uniqueVisitors: string[];
   numberRequests: number;
   numberValidRequests: number;
+  lastRequest: RequestModel;
 }
