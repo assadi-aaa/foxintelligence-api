@@ -4,6 +4,7 @@ import * as readline from 'readline';
 import { Interface } from 'readline';
 import { ConfigService } from '../config/config.service';
 import { Injectable } from '@nestjs/common';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class FileReaderService {
@@ -22,10 +23,13 @@ export class FileReaderService {
     return fs.statSync(this.filePath).size;
   }
 
-  parseFile(startReadFrom: number = 0, cbProgress, cbFinish) {
+  parseFile(startReadFrom: number = 0): Observable<string> {
     const readLineIterator = this.createStreamReadLine(startReadFrom);
-    readLineIterator.on('line', (line: string) => cbProgress(line));
-    readLineIterator.on('close', () => cbFinish());
+    return new Observable(subscriber => {
+      readLineIterator.on('line', (line: string) => subscriber.next(line));
+      readLineIterator.on('close', () => subscriber.complete());
+      readLineIterator.on('error', (err) => subscriber.error(err));
+    });
   }
 
   private createStreamReadLine(startReadFrom: number): Interface {

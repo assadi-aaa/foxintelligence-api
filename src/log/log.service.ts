@@ -29,7 +29,6 @@ export class LogService extends NestSchedule implements OnModuleInit {
 
   async processFileLog() {
     return new Promise((async (resolve, reject) => {
-
       if (!this.fileService.isFileExist()) {
         return reject(new Error('file log doesn\'t exist'));
       }
@@ -46,9 +45,11 @@ export class LogService extends NestSchedule implements OnModuleInit {
 
       /*start parsing*/
       const startReadFrom = /*lastFileSize ||*/ 0;
-      this.fileService.parseFile(startReadFrom,
-        (line) => this.onReadLineHandler(line),
-        () => this.onFinishHandler(resolve));
+      this.fileService.parseFile(startReadFrom)
+        .subscribe({
+          next: (line) => this.onReadLineHandler(line),
+          complete: () => this.onFinishHandler(resolve),
+        });
     }));
 
   }
