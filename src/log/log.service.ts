@@ -2,12 +2,13 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { FileReaderService, LocalStorageService } from '../services';
 import { Interval, NestSchedule } from 'nest-schedule';
 import { getPartsOfLogLine, getSectionFromUrl, validateStatus } from '../helpers';
-import { Sections, RequestModel, SectionData } from '../models';
+import { Sections, RequestModel, SectionData, Section } from '../models';
+import * as moment from 'moment';
 
 @Injectable()
 export class LogService extends NestSchedule implements OnModuleInit {
 
-  lastRequest: string;
+  lastRequest: RegExpMatchArray;
   newVisitors: Set<string>;
   data: Sections;
 
@@ -22,7 +23,7 @@ export class LogService extends NestSchedule implements OnModuleInit {
 
     this.data = {
       sections: {} as SectionData,
-      lastVisit: {} as RequestModel,
+      lastVisit: '',
       uniqueVisitors: [],
       numberRequests: 0,
       numberValidRequests: 0,
@@ -44,7 +45,7 @@ export class LogService extends NestSchedule implements OnModuleInit {
 
       this.data = sectionsData || this.data;
 
-      const startReadFrom = lastFileSize || 0;
+      const startReadFrom = /*lastFileSize ||*/ 0;
 
       this.newVisitors = new Set(this.data.uniqueVisitors);
 
@@ -64,7 +65,8 @@ export class LogService extends NestSchedule implements OnModuleInit {
       const isSuccess: boolean = validateStatus(lineParts[8] || false);
 
       // get unique visitors
-      this.newVisitors.add(sectionName);
+
+      this.newVisitors.add(lineParts[1]);
 
       // get stats requests
       this.data.numberRequests++;
@@ -84,16 +86,34 @@ export class LogService extends NestSchedule implements OnModuleInit {
       }
 
       // get last request from file log
-      this.lastRequest = line;
+      this.lastRequest = lineParts;
     }
   }
 
   private async onFinishHandler(resolve) {
+
+    // store data to use it next time we read the file
     this.data.uniqueVisitors = [...this.newVisitors.values()];
     await this.storageService.setItem('sectionsData', this.data);
 
+    // prepare response to return as response for client request
+    resolve(this.prepareResponse());
+  }
+
+  private prepareResponse() {
     const { sections, ...dataResponse } = this.data;
-    resolve(dataResponse);
+    const newSections = Object.keys(sections).map((value: string) => {
+      return { ...sections[value], sectionName: value };
+    }).sort((sectionA: Section, sectionB: Section) => sectionB.occurrence - sectionA.occurrence);
+    const lastRequest = {} as RequestModel;
+
+    lastRequest.date = moment(this.lastRequest[4], 'DD/MMM/YYYY:HH:mm:ss Z').toDate();
+    lastRequest.url = this.lastRequest[1];
+    lastRequest.method = this.lastRequest[1];
+    lastRequest.status = this.lastRequest[5];
+    lastRequest.section = getSectionFromUrl(this.lastRequest[6]);
+    lastRequest.isSuccess = validateStatus(this.lastRequest[8]);
+    return { ...dataResponse, sections: newSections, lastRequest };
   }
 
   /*@Interval(10000)

@@ -1,5 +1,8 @@
 export interface RequestModel {
-  date: string;
+  date: Date;
+  method: string;
+  status: string;
+  url: string;
   section: string;
   isSuccess: boolean;
 }

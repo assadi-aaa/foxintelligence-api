@@ -3,7 +3,7 @@ import { SectionData } from './section-data.model';
 
 export interface Sections {
   sections: SectionData;
-  lastVisit: RequestModel;
+  lastVisit: string;
   uniqueVisitors: string[];
   numberRequests: number;
   numberValidRequests: number;
