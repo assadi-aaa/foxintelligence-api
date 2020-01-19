@@ -5,7 +5,7 @@ import { AppModule } from '../src/app.module';
 import { LogModule } from '../src/log/log.module';
 import * as responseApi from '../fixtures/response-analyse-api.json';
 import * as assert from 'assert';
-import { clearCache } from '../src/helpers';
+import { LocalStorageService } from '../src/services';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -54,3 +54,8 @@ describe('LogController (e2e)', () => {
   });
 
 });
+
+const clearCache = async () => {
+  const storageService = new LocalStorageService();
+  await storageService.clearAll();
+};

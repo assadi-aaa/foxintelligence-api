@@ -26,10 +26,11 @@ describe('Log Controller', () => {
 
   describe('processFileLog()', () => {
 
-    const spy = jest.spyOn(logService, 'processFileLog');
-    spy.mockImplementation(() => Promise.resolve(responseApi));
+    let spy;
 
     it('should return an object responseApi', async () => {
+      spy = jest.spyOn(logService, 'processFileLog');
+      spy.mockImplementation(() => Promise.resolve(responseApi));
       expect(await controller.processFileLog()).toBe(responseApi);
     });
 

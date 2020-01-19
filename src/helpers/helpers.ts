@@ -13,8 +13,3 @@ export function validateStatus(status) {
 export function getSectionFromUrl(urlPath: string): string {
   return url?.parse(urlPath)?.pathname?.split('/')[1];
 }
-
-export const clearCache = async () => {
-  const storageService = new LocalStorageService();
-  await storageService.clearAll();
-};
