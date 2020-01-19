@@ -18,9 +18,6 @@ export class LogService extends NestSchedule implements OnModuleInit {
   }
 
   onModuleInit() {
-    // tslint:disable-next-line:no-console
-    console.log(`The module has been initialized.`);
-
     this.data = {
       sections: {} as SectionData,
       lastVisit: '',
@@ -38,17 +35,18 @@ export class LogService extends NestSchedule implements OnModuleInit {
         return reject(new Error('file log doesn\'t exist'));
       }
 
+      /* get data from last parsing and position from where reading file ended */
       const sectionsData = await this.storageService.getItem('sectionsData') as Sections;
       const lastFileSize = await this.storageService.getItem('lastFileSize');
       const fileSize = this.fileService.getFileSize();
       await this.storageService.setItem('lastFileSize', fileSize);
 
+      /* init data */
       this.data = sectionsData || this.data;
-
-      const startReadFrom = /*lastFileSize ||*/ 0;
-
       this.newVisitors = new Set(this.data.uniqueVisitors);
 
+      /*start parsing*/
+      const startReadFrom = /*lastFileSize ||*/ 0;
       this.fileService.parseFile(startReadFrom,
         (line) => this.onReadLineHandler(line),
         () => this.onFinishHandler(resolve));
@@ -105,15 +103,19 @@ export class LogService extends NestSchedule implements OnModuleInit {
     const newSections = Object.keys(sections).map((value: string) => {
       return { ...sections[value], sectionName: value };
     }).sort((sectionA: Section, sectionB: Section) => sectionB.occurrence - sectionA.occurrence);
-    const lastRequest = {} as RequestModel;
+    const lastRequest = this.createLastRequest();
+    return { ...dataResponse, sections: newSections, lastRequest };
+  }
 
+  private createLastRequest(): RequestModel {
+    const lastRequest = {} as RequestModel;
     lastRequest.date = moment(this.lastRequest[4], 'DD/MMM/YYYY:HH:mm:ss Z').toDate();
     lastRequest.url = this.lastRequest[1];
     lastRequest.method = this.lastRequest[1];
     lastRequest.status = this.lastRequest[5];
     lastRequest.section = getSectionFromUrl(this.lastRequest[6]);
     lastRequest.isSuccess = validateStatus(this.lastRequest[8]);
-    return { ...dataResponse, sections: newSections, lastRequest };
+    return lastRequest;
   }
 
   /*@Interval(10000)
