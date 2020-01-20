@@ -2,10 +2,6 @@ import * as nodePersist from 'node-persist';
 
 export class LocalStorageService {
 
-  constructor() {
-    this.initStorage();
-  }
-
   async getItem(key) {
     return nodePersist.getItem(key);
   }
@@ -18,8 +14,8 @@ export class LocalStorageService {
     await nodePersist.clear();
   }
 
-  private async initStorage() {
-    await nodePersist.init({
+  public async initStorage() {
+    return nodePersist.init({
       stringify: JSON.stringify,
       parse: JSON.parse,
       encoding: 'utf8',

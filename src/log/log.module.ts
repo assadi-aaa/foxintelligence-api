@@ -1,13 +1,14 @@
 import { CacheModule, Module } from '@nestjs/common';
 import { LogController } from './log.controller';
 import { LogService } from './log.service';
-import { FileReaderService, LocalStorageService } from '../services';
+import { FileReaderService } from '../services';
 import { ConfigModule } from '../config/config.module';
 import { ScheduleModule } from 'nest-schedule';
 import { ConfigService } from '../config/config.service';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
-  imports: [ScheduleModule.register(), ConfigModule, CacheModule.registerAsync({
+  imports: [ScheduleModule.register(), ConfigModule, StorageModule, CacheModule.registerAsync({
     imports: [ConfigModule],
     useFactory: async (configService: ConfigService) => ({
       ttl: configService.get('CACHE_TTL'),
@@ -15,8 +16,7 @@ import { ConfigService } from '../config/config.service';
     inject: [ConfigService],
   })],
   controllers: [LogController],
-  providers: [LogService, LocalStorageService, FileReaderService],
-  exports: [LocalStorageService],
+  providers: [LogService, FileReaderService],
 })
 export class LogModule {
 }

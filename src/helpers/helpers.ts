@@ -1,5 +1,4 @@
 import * as url from 'url';
-import { LocalStorageService } from '../services';
 
 export function getPartsOfLogLine(line: string): RegExpMatchArray {
   const reg = new RegExp('^(\\S+) (\\S+) (\\S+) \\[([\\w:/]+\\s[+\\-]\\d{4})\\] "(\\S+)\\s?(\\S+)?\\s?(\\S+)?" (\\d{3}|-) (\\d+|-)\\s?"?([^"]*)"?\\s?"?([^"]*)?"?$');

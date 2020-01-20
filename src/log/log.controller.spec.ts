@@ -5,6 +5,7 @@ import { FileReaderService } from '../services';
 import { ConfigModule } from '../config/config.module';
 import { LogModule } from './log.module';
 import * as responseApi from '../../fixtures/response-analyse-api.json';
+import { StorageModule } from '../storage/storage.module';
 
 describe('Log Controller', () => {
   let controller: LogController;
@@ -12,7 +13,7 @@ describe('Log Controller', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule, LogModule],
+      imports: [ConfigModule, LogModule, StorageModule],
       providers: [LogService, FileReaderService],
     }).compile();
 
@@ -24,20 +25,21 @@ describe('Log Controller', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('processFileLog()', () => {
-
+  describe('getDataFromLog()', () => {
     let spy;
 
     it('should return an object responseApi', async () => {
-      spy = jest.spyOn(logService, 'processFileLog');
+      spy = jest.spyOn(logService, 'getDataFromLog');
       spy.mockImplementation(() => Promise.resolve(responseApi));
-      expect(await controller.processFileLog()).toBe(responseApi);
-    });
-
-    it('should called Once', async () => {
+      const res = await controller.getDataFromLog();
+      expect(res).toBe(responseApi);
       expect(spy).toHaveBeenCalled();
       expect(spy).toHaveBeenCalledTimes(1);
     });
 
   });
+});
+
+// tslint:disable-next-line:no-empty
+process.on('unhandledRejection', err => {
 });

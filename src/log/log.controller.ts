@@ -12,7 +12,7 @@ export class LogController {
 
   @ApiResponse({ status: 200, description: 'Return analysed data from log file !' })
   @Get('analyse')
-  async processFileLog() {
-    return this.logService.processFileLog();
+  async getDataFromLog() {
+    return this.logService.getDataFromLog();
   }
 }

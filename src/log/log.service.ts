@@ -1,17 +1,18 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { FileReaderService, LocalStorageService } from '../services';
+import { FileReaderService } from '../services';
 import { Interval, NestSchedule } from 'nest-schedule';
 import { getPartsOfLogLine, getSectionFromUrl, validateStatus } from '../helpers';
 import { DataProcessingModel, RequestModel, SectionData, Section } from '../models';
 import * as moment from 'moment';
 import { ConfigService } from '../config/config.service';
 import { DataResponseModel } from '../models/data-response.model';
+import { LocalStorageService } from '../storage/localStorage.service';
 
 @Injectable()
 export class LogService extends NestSchedule implements OnModuleInit {
 
   lastRequest: RegExpMatchArray;
-  newVisitors: Set<string>;
+  newVisitors: Set<string> = new Set<string>();
   data: DataProcessingModel;
   env: string;
 
@@ -27,32 +28,37 @@ export class LogService extends NestSchedule implements OnModuleInit {
       uniqueVisitors: [],
       numberRequests: 0,
       numberValidRequests: 0,
+      lastRequest: {} as RequestModel,
     };
   }
 
-  /*@Interval(10000) //TODO
- intervalJob() {
-   this.processFileLog();
- }*/
+  // refresh data by Interval job
+  @Interval(10000)
+  async intervalJob() {
+    const sectionsData = await this.storageService.getItem('sectionsData') as DataProcessingModel;
+    this.data = Object.assign({}, sectionsData || this.data);
+    await this.processFileLog();
+  }
+
+  // fetch data to respond the request
+  async getDataFromLog() {
+    const sectionsData = await this.storageService.getItem('sectionsData') as DataProcessingModel;
+    if (sectionsData) {
+      this.data = Object.assign({}, sectionsData);
+      return Promise.resolve(this.prepareResponse());
+    } else {
+      return this.processFileLog();
+    }
+  }
 
   async processFileLog() {
     return new Promise((async (resolve, reject) => {
       if (!this.fileService.isFileExist()) {
         return reject(new Error('file log doesn\'t exist'));
       }
-
-      /* get data from last parsing and position from where reading file ended */
-      const sectionsData = await this.storageService.getItem('sectionsData') as DataProcessingModel;
-      const lastFileSize = await this.storageService.getItem('lastFileSize');
-      const fileSize = this.fileService.getFileSize();
-      await this.storageService.setItem('lastFileSize', fileSize);
-
-      /* init data */
-      this.data = sectionsData || this.data;
-      this.newVisitors = new Set(this.data.uniqueVisitors);
-
       /*start parsing*/
-      const startReadFrom = /*(this.env !== 'test' && lastFileSize) ? lastFileSize :*/ 0; // TODO
+      const lastFileSize = await this.storageService.getItem('lastFileSize');
+      const startReadFrom = (this.env !== 'test' && lastFileSize) ? lastFileSize : 0;
       this.fileService.parseFile(startReadFrom)
         .subscribe({
           next: (line) => this.onReadLineHandler(line),
@@ -70,7 +76,6 @@ export class LogService extends NestSchedule implements OnModuleInit {
       const isSuccess: boolean = validateStatus(lineParts[8] || false);
 
       // get unique visitors
-
       this.newVisitors.add(lineParts[1]);
 
       // get stats requests
@@ -97,10 +102,19 @@ export class LogService extends NestSchedule implements OnModuleInit {
 
   private async onFinishHandler(resolve) {
 
-    // store data to use it next time we read the file
-    this.data.uniqueVisitors = [...this.newVisitors.values()];
-    await this.storageService.setItem('sectionsData', this.data);
+    // store new Visitors
+    this.data.uniqueVisitors = [...new Set([...this.data.uniqueVisitors, ...this.newVisitors.values()]).values()];
 
+    if (this.lastRequest) {
+      this.data.lastRequest = this.createLastRequest();
+    }
+
+    // store last visit
+
+    // store data to use it next time we read the file
+    await this.storageService.setItem('sectionsData', this.data);
+    const fileSize = this.fileService.getFileSize();
+    await this.storageService.setItem('lastFileSize', fileSize);
     // prepare response to return as response for client request
     resolve(this.prepareResponse());
   }
@@ -110,8 +124,7 @@ export class LogService extends NestSchedule implements OnModuleInit {
     const newSections = Object.keys(sections).map((value: string) => {
       return { ...sections[value], sectionName: value };
     }).sort((sectionA: Section, sectionB: Section) => sectionB.occurrence - sectionA.occurrence);
-    const lastRequest = this.createLastRequest();
-    return { ...dataResponse, sections: newSections, lastRequest } as DataResponseModel;
+    return { ...dataResponse, sections: newSections } as DataResponseModel;
   }
 
   private createLastRequest(): RequestModel {

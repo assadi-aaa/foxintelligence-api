@@ -5,7 +5,8 @@ import { AppModule } from '../src/app.module';
 import { LogModule } from '../src/log/log.module';
 import * as responseApi from '../fixtures/response-analyse-api.json';
 import * as assert from 'assert';
-import { LocalStorageService } from '../src/services';
+import { StorageModule } from '../src/storage/storage.module';
+import { LocalStorageService } from '../src/storage/localStorage.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -29,13 +30,14 @@ describe('AppController (e2e)', () => {
 
 describe('LogController (e2e)', () => {
   let app: INestApplication;
+  let storageService: LocalStorageService;
 
   beforeEach(async () => {
-    await clearCache();
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [LogModule],
+      imports: [LogModule, StorageModule],
     }).compile();
-
+    storageService = moduleFixture.get<LocalStorageService>(LocalStorageService);
+    await clearCache(storageService);
     app = moduleFixture.createNestApplication();
     await app.init();
   });
@@ -50,12 +52,11 @@ describe('LogController (e2e)', () => {
   });
 
   afterEach(async () => {
-    await clearCache();
+    await clearCache(storageService);
   });
 
 });
 
-const clearCache = async () => {
-  const storageService = new LocalStorageService();
+const clearCache = async (storageService) => {
   await storageService.clearAll();
 };
