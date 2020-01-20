@@ -101,7 +101,6 @@ export class LogService extends NestSchedule implements OnModuleInit {
   }
 
   private async onFinishHandler(resolve) {
-
     // store new Visitors
     this.data.uniqueVisitors = [...new Set([...this.data.uniqueVisitors, ...this.newVisitors.values()]).values()];
 

@@ -1,10 +1,12 @@
 import * as fs from 'fs';
 import * as stream from 'stream';
 import * as readline from 'readline';
+import * as es from 'event-stream';
 import { Interface } from 'readline';
 import { ConfigService } from '../config/config.service';
 import { Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
+import { Stream } from 'stream';
 
 @Injectable()
 export class FileReaderService {
@@ -24,18 +26,18 @@ export class FileReaderService {
   }
 
   parseFile(startReadFrom: number = 0): Observable<string> {
-    const readLineIterator = this.createStreamReadLine(startReadFrom);
     return new Observable(subscriber => {
-      readLineIterator.on('line', (line: string) => subscriber.next(line));
-      readLineIterator.on('close', () => subscriber.complete());
-      readLineIterator.on('error', (err) => subscriber.error(err));
+      const readLineIterator = this.createStreamReadLine(startReadFrom);
+      readLineIterator.pipe(es.split())
+        .pipe(es.mapSync((line: string) => subscriber.next(line))
+          .on('close', () => subscriber.complete())
+          .on('error', (err) => subscriber.error(err)),
+        );
     });
   }
 
-  private createStreamReadLine(startReadFrom: number): Interface {
-    const instream = fs.createReadStream(this.filePath, { start: startReadFrom });
-    const outstream: any = new stream();
-    return readline.createInterface(instream, outstream);
+  private createStreamReadLine(startReadFrom: number): Stream {
+    return fs.createReadStream(this.filePath, { start: startReadFrom });
   }
 
 }
