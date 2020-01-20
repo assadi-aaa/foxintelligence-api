@@ -11,6 +11,9 @@ $ npm install
 ## Running the app
 
 ```bash
+
+Set the file path to analyse in env files in environments folder
+
 # development
 $ npm run start
 
