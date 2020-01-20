@@ -12,7 +12,7 @@ $ npm install
 
 ```bash
 
-Set the file path to analyse in env files in environments folder
+Set path of the log file in the environments files
 
 # development
 $ npm run start
