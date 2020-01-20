@@ -46,8 +46,7 @@ $ npm run test:e2e
 - Add unit and e2e tests
 
 ## Things I wish I could have done
-- I have tried for fun to test with on big file (2gb) the api was too slow that lead me to think of other ways like
-  split the file and parallelize the treatment
+- I have tried for fun to test with on big file (2gb) , the Api was too slow so that leaded me to think of other ways to deal with this   problem like split the file and parallelize the treatment
 - Exploit all the data in the log file and do some advanced statistics
 - Add a login to secure the Api
 - Use a database to keep processed data  
