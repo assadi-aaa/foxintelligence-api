@@ -1,5 +1,11 @@
 import * as url from 'url';
 
+/**
+* Helper function to extract parts from a log line.
+* @param string line
+* 
+* @return array result
+*/
 export function getPartsOfLogLine(line: string): RegExpMatchArray {
   const reg = new RegExp('^(\\S+) (\\S+) (\\S+) \\[([\\w:/]+\\s[+\\-]\\d{4})\\] "(\\S+)\\s?(\\S+)?\\s?(\\S+)?" (\\d{3}|-) (\\d+|-)\\s?"?([^"]*)"?\\s?"?([^"]*)?"?$');
   return line.match(reg);
