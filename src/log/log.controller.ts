@@ -1,4 +1,4 @@
-import { CacheInterceptor, Controller, Get, UseInterceptors } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { LogService } from './log.service';
 import { ApiResponse } from '@nestjs/swagger';
 
