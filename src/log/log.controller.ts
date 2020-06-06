@@ -1,4 +1,4 @@
-import { CacheInterceptor, Controller, Get, UseInterceptors } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { LogService } from './log.service';
 import { ApiResponse } from '@nestjs/swagger';
 
@@ -13,6 +13,7 @@ export class LogController {
   @ApiResponse({ status: 200, description: 'Return analysed data from log file !' })
   @Get('analyse')
   async getDataFromLog() {
+    // return logs
     return this.logService.getDataFromLog();
   }
 }
